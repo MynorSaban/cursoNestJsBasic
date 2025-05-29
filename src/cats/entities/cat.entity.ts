@@ -1,5 +1,5 @@
 
-import { Breed } from 'src/breed/entities/breed.entity';
+import { Breed } from '../../breed/entities/breed.entity';
 import { Column, DeleteDateColumn, Entity, ManyToOne } from 'typeorm';
 
 @Entity() // @Entity() es un decorador de typescript que indica que esta clase es una entidad de la base de datos

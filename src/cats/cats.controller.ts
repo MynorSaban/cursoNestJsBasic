@@ -2,7 +2,12 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CatsService } from './cats.service';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { UpdateCatDto } from './dto/update-cat.dto';
+import { Role } from 'src/common/enums/rol.enum';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
+import { UserActivateInterface } from 'src/interfaces/user-activate.interface';
 
+@Auth(Role.USER)
 @Controller('cats')
 export class CatsController {
   constructor(private readonly catsService: CatsService) {}
@@ -13,7 +18,7 @@ export class CatsController {
   }
 
   @Get()
-  findAll() {
+  findAll(@ActiveUser() user: UserActivateInterface) {
     return this.catsService.findAll();
   }
 

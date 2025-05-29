@@ -3,11 +3,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserActivateInterface } from 'src/interfaces/user-activate.interface';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,9 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     //verificamos si existe el usuario en la base de datos
-    const user = await this.usersService.findOneByEmail(loginDto.email);
+    const user = await this.usersService.findOneByEmailWithPassword(
+      loginDto.email,
+    );
 
     if (!user) {
       throw new UnauthorizedException('El email es incorrecto');
@@ -37,14 +40,15 @@ export class AuthService {
 
     const payload = {
       email: user.email,
-      role: user.role
+      role: user.role,
     };
 
     //creacion del token
     const token = await this.jwtService.signAsync(payload);
     return {
       token,
-      payload,
+      email: user.email,
+      role: user.role,
     };
   }
   async register(registerDto: RegisterDto) {
@@ -59,5 +63,23 @@ export class AuthService {
       ...registerDto,
       password: await bcryptjs.hash(registerDto.password, 10),
     });
+  }
+
+  async profileActive({ email }: UserActivateInterface) {
+    //validacion de permisos, pero si en caso son varias validaciones se puede hacer con un middleware
+    /*     if(role !== 'admin') {
+      throw new UnauthorizedException('No tienes permiso para ver esta informacion');
+    } */
+
+    return await this.usersService.findOneByEmail(email);
+  }
+
+    async profileNormal({ email,role }: { email: string; role: string }) {
+    //validacion de permisos, pero si en caso son varias validaciones se puede hacer con un middleware
+    /*     if(role !== 'admin') {
+      throw new UnauthorizedException('No tienes permiso para ver esta informacion');
+    } */
+
+    return await this.usersService.findOneByEmail(email);
   }
 }

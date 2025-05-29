@@ -1,3 +1,4 @@
+import { Role } from '../../common/enums/rol.enum';
 import {
   Column,
   DeleteDateColumn,
@@ -7,7 +8,6 @@ import {
 
 @Entity()
 export class User {
-    
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -17,12 +17,20 @@ export class User {
   @Column({ unique: true, nullable: false })
   email: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, select: false })
   password: string;
 
-  @Column({ default: 'user' })
+  /* esto es para postgresql  
+ @Column({
+    type: 'enum',
+    enum: Role,
+    array: true,
+    default: [Role.USER],
+  }) */
+
+  @Column({ type: 'enum', default: Role.USER, enum: Role }) // para asegurarnos que solo existan ciertos tipos entonces tenemos que tipar la columna
   role: string;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ select: false }) // esto sirve para ocultar la columna en la base de datos
   deletedAt: Date;
 }
