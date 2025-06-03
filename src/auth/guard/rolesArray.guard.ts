@@ -21,7 +21,6 @@ export class RolesGuardArray implements CanActivate {
       context.getHandler(),
     );
 
-    console.log('requiredRoles', requiredRoles);
     // Si no se asignan roles, dejamos pasar
     if (!requiredRoles) {
       return true;

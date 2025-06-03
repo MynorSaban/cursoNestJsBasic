@@ -11,6 +11,7 @@ import { Role } from '../common/enums/rol.enum';
 import { Auth } from './decorators/auth.decorator';
 import { ActiveUser } from './decorators/active-user.decorator';
 import { UserActivateInterface } from 'src/interfaces/user-activate.interface';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 //se crea un tipado para la devolucion de la informacion del request
 
@@ -21,7 +22,8 @@ interface RequestWithUser extends Request {
     role: string;
   };
 }
-
+//para validar el token se debe de agregar el decorador de @ApiBearerAuth
+@ApiBearerAuth()
 //este es una ruta que se agrega para poder usar este controlador
 @Controller('auth')
 export class AuthController {

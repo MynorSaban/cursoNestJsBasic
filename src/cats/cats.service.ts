@@ -1,10 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { UpdateCatDto } from './dto/update-cat.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cat } from './entities/cat.entity';
 import { Repository } from 'typeorm';
 import { Breed } from '../breed/entities/breed.entity';
+import { UserActivateInterface } from 'src/interfaces/user-activate.interface';
+import { Role } from 'src/common/enums/rol.enum';
 
 @Injectable()
 export class CatsService {
@@ -14,7 +16,7 @@ export class CatsService {
     private catsRepository: Repository<Cat>,
 
     /// se importa la otra entidad para hacer la relacion con la otra entidad
-    // en la inyeccion se debe de 
+    // en la inyeccion se debe de
     @InjectRepository(Breed)
     private breedRepository: Repository<Breed>,
   ) {}
@@ -24,14 +26,13 @@ export class CatsService {
     // await this.catsRepository.save(cat);  // TAMBIEN SE CREA LA INSTANCIA DEL GATO
     // return await this.catsRepository.save(createCatDto);
 
-
     const breed = await this.breedRepository.findOneBy({
       name: createCatDto.breed,
     });
     if (!breed) {
       throw new BadRequestException('Breed not found');
     }
-   
+
     return await this.catsRepository.save({
       ...createCatDto,
       breed: breed, // se le asigna la propiedad breed a la entidad cat
@@ -44,16 +45,37 @@ export class CatsService {
   }
 
   async findOne(id: number) {
-    return await this.catsRepository.findOneBy({ id });
+    const cat = await this.catsRepository.findOneBy({ id });
+    if (!cat) {
+      throw new BadRequestException('Cat not found');
+    }
+    return cat;
+  
   }
 
-  async update(id: number, updateCatDto: UpdateCatDto) {
-    //return await this.catsRepository.update(id, updateCatDto); // update es para actualizar un registro
-    return;
+  async update(
+    id: number,
+    updateCatDto: UpdateCatDto,
+    user: UserActivateInterface,
+  ) {
+    await this.findOne(id);
+    return await this.catsRepository.update(id, {
+      ...updateCatDto,
+      breed:  updateCatDto.breed ? await this.validateBreed(updateCatDto.breed) : undefined,
+    });
   }
 
   async remove(id: number) {
     return await this.catsRepository.softDelete(id); // SOFT DELETE ELIMINA EL REGISTRO PERO NO ELIMINA EL REGISTRO DE LA BASE DE DATOS
     // return await this.catsRepository.softRemove(id) // SOFT DELETE ELIMINA EL REGISTRO DE LA BASE DE DATOS
   }
+  private async validateBreed(breed: string) {
+    const breedEntity = await this.breedRepository.findOneBy({ name: breed });
+  
+    if (!breedEntity) {
+      throw new BadRequestException('Breed not found');
+    }
+    return breedEntity;
+  }
+
 }

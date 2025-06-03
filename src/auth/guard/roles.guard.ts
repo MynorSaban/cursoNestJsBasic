@@ -22,11 +22,9 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    console.log(role);
-
     //obtiene la información del usuario del request// accede directo al objeto user del request
     const { user } = context.switchToHttp().getRequest();
-    console.log(user);
+
     if (role === 'admin') {
       return true;
     }
